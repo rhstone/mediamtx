@@ -287,6 +287,17 @@ func setupAudioTracks(
 	}
 }
 
+// klvSourceCharacteristic maps a format.KLV's MPEG-TS-side hints to a MISB
+// ST 1910.1 source-characteristic. Falls back to "01FC" (canonical sync KLV)
+// for unmapped hints and for sources that don't carry sync/MAF (RTSP, etc.).
+func klvSourceCharacteristic(f *format.KLV) string {
+	sc := codecs.SourceCharacteristicFromMPEGTS(f.Synchronous, f.MetadataApplicationFormat)
+	if sc == "" || (!f.Synchronous && f.MetadataApplicationFormat == 0) {
+		return "01FC"
+	}
+	return sc
+}
+
 func setupDataTracks(
 	desc *description.Session,
 	r *stream.Reader,
@@ -304,9 +315,9 @@ func setupDataTracks(
 
 	for _, media := range desc.Medias {
 		for _, forma := range media.Formats {
-			if forma, ok := forma.(*format.KLV); ok && muxer.Variant == gohlslib.MuxerVariantMPEGTS {
+			if forma, ok := forma.(*format.KLV); ok {
 				track := &gohlslib.Track{
-					Codec:     &codecs.KLV{Synchronous: true},
+					Codec:     &codecs.KLV{SourceCharacteristic: klvSourceCharacteristic(forma)},
 					ClockRate: forma.ClockRate(),
 				}
 

@@ -229,9 +229,14 @@ func FromStream(
 					})
 
 			case *format.KLV:
+				sync := forma.Synchronous
+				if !sync && forma.MetadataApplicationFormat == 0 {
+					sync = true // RTSP and other sources without MPEG-TS hints
+				}
 				track := &mcmpegts.Track{
 					Codec: &tscodecs.KLV{
-						Synchronous: true,
+						Synchronous:               sync,
+						MetadataApplicationFormat: forma.MetadataApplicationFormat,
 					},
 				}
 

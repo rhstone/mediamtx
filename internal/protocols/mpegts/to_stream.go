@@ -131,7 +131,9 @@ func ToStream(
 			medi = &description.Media{
 				Type: description.MediaTypeApplication,
 				Formats: []format.Format{&format.KLV{
-					PayloadTyp: 96,
+					PayloadTyp:                96,
+					Synchronous:               codec.Synchronous,
+					MetadataApplicationFormat: codec.MetadataApplicationFormat,
 				}},
 			}
 			r.OnDataKLV(track, func(pts int64, uni []byte) error {
